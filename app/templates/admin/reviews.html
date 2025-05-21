@@ -1,0 +1,406 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Управление отзывами - Админ-панель{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Управление отзывами</h1>
+</div>
+
+<!-- Статистика отзывов -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Всего отзывов</h5>
+                <p class="card-text display-4">{{ status_counts.all }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-warning">
+                <h5 class="card-title">Ожидают проверки</h5>
+                <p class="card-text display-4">{{ status_counts.pending }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-success">
+                <h5 class="card-title">Опубликованы</h5>
+                <p class="card-text display-4">{{ status_counts.approved }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-danger">
+                <h5 class="card-title">Отклонены</h5>
+                <p class="card-text display-4">{{ status_counts.rejected }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Фильтры -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Фильтры</h5>
+    </div>
+    <div class="card-body">
+        <form action="/admin/reviews" method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="status" class="form-label">Статус</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">Все статусы</option>
+                    <option value="{{ ReviewStatus.PENDING }}" {% if current_status == ReviewStatus.PENDING.value %}selected{% endif %}>Ожидают проверки</option>
+                    <option value="{{ ReviewStatus.APPROVED }}" {% if current_status == ReviewStatus.APPROVED.value %}selected{% endif %}>Опубликованы</option>
+                    <option value="{{ ReviewStatus.REJECTED }}" {% if current_status == ReviewStatus.REJECTED.value %}selected{% endif %}>Отклонены</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="service_id" class="form-label">Услуга</label>
+                <select class="form-select" id="service_id" name="service_id">
+                    <option value="">Все услуги</option>
+                    {% for service in services %}
+                    <option value="{{ service.id }}" {% if current_service_id == service.id %}selected{% endif %}>{{ service.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">Применить</button>
+                <a href="/admin/reviews" class="btn btn-outline-secondary">Сбросить</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Список отзывов -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Список отзывов</h5>
+    </div>
+    <div class="card-body">
+        {% if reviews %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Дата</th>
+                        <th>Клиент</th>
+                        <th>Услуга</th>
+                        <th>Оценка</th>
+                        <th>Текст отзыва</th>
+                        <th>Статус</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for review in reviews %}
+                    <tr>
+                        <td>{{ review.id }}</td>
+                        <td>{{ review.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                        <td>
+                            {% if review.user %}
+                            {{ review.user.name }}
+                            {% else %}
+                            {{ review.client_name or "Аноним" }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if review.service %}
+                            {{ review.service.name }}
+                            {% else %}
+                            <span class="text-muted">Не указана</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="star-rating">
+                                {% for i in range(1, 6) %}
+                                <i class="fas fa-star {% if i <= review.rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td>
+                            <div style="max-width: 300px; max-height: 100px; overflow: auto;">
+                                {{ review.text }}
+                            </div>
+                        </td>
+                        <td>
+                            {% if review.status.value == ReviewStatus.PENDING.value %}
+                            <span class="badge bg-warning">Ожидает проверки</span>
+                            {% elif review.status.value == ReviewStatus.APPROVED.value %}
+                            <span class="badge bg-success">Опубликован</span>
+                            {% elif review.status.value == ReviewStatus.REJECTED.value %}
+                            <span class="badge bg-danger">Отклонен</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Действия
+                                </button>
+                                <ul class="dropdown-menu">
+                                    {% if review.status.value != ReviewStatus.APPROVED.value %}
+                                    <li>
+                                        <a href="#" class="dropdown-item approve-review" data-review-id="{{ review.id }}">
+                                            <i class="fas fa-check text-success me-2"></i> Опубликовать
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    
+                                    {% if review.status.value != ReviewStatus.REJECTED.value %}
+                                    <li>
+                                        <a href="#" class="dropdown-item reject-review" data-review-id="{{ review.id }}">
+                                            <i class="fas fa-times text-danger me-2"></i> Отклонить
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    
+                                    <li><hr class="dropdown-divider"></li>
+                                    
+                                    <li>
+                                        <a href="#" class="dropdown-item add-comment" data-review-id="{{ review.id }}" data-review-comment="{{ review.admin_comment or '' }}">
+                                            <i class="fas fa-comment-dots text-primary me-2"></i> Добавить комментарий
+                                        </a>
+                                    </li>
+                                    
+                                    <li>
+                                        <a href="#" class="dropdown-item delete-review" data-review-id="{{ review.id }}">
+                                            <i class="fas fa-trash text-danger me-2"></i> Удалить
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Пагинация -->
+        {% if total_pages > 1 %}
+        <nav aria-label="Навигация по страницам">
+            <ul class="pagination justify-content-center">
+                {% for p in range(1, total_pages + 1) %}
+                <li class="page-item {% if p == page %}active{% endif %}">
+                    <a class="page-link" href="/admin/reviews?page={{ p }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_service_id %}&service_id={{ current_service_id }}{% endif %}">{{ p }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="alert alert-info">
+            <p class="mb-0">Отзывов, соответствующих заданным критериям, не найдено.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Модальное окно для комментария -->
+<div class="modal fade" id="commentModal" tabindex="-1" aria-labelledby="commentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="commentModalLabel">Комментарий администратора</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <form id="commentForm">
+                    <input type="hidden" id="reviewId" name="reviewId">
+                    <div class="mb-3">
+                        <label for="adminComment" class="form-label">Комментарий</label>
+                        <textarea class="form-control" id="adminComment" name="adminComment" rows="3" placeholder="Введите комментарий..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="saveComment">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для подтверждения удаления -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Подтверждение удаления</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить этот отзыв? Это действие нельзя отменить.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Обработчик для одобрения отзыва
+        document.querySelectorAll('.approve-review').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const reviewId = this.getAttribute('data-review-id');
+                updateReviewStatus(reviewId, '{{ ReviewStatus.APPROVED }}');
+            });
+        });
+        
+        // Обработчик для отклонения отзыва
+        document.querySelectorAll('.reject-review').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const reviewId = this.getAttribute('data-review-id');
+                
+                // Сначала открываем модальное окно для комментария
+                document.getElementById('reviewId').value = reviewId;
+                document.getElementById('adminComment').value = '';
+                const commentModal = new bootstrap.Modal(document.getElementById('commentModal'));
+                commentModal.show();
+                
+                // При нажатии кнопки "Сохранить" в модальном окне
+                document.getElementById('saveComment').onclick = function() {
+                    const adminComment = document.getElementById('adminComment').value;
+                    updateReviewStatus(reviewId, '{{ ReviewStatus.REJECTED }}', adminComment);
+                    commentModal.hide();
+                };
+            });
+        });
+        
+        // Обработчик для добавления комментария
+        document.querySelectorAll('.add-comment').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const reviewId = this.getAttribute('data-review-id');
+                const reviewComment = this.getAttribute('data-review-comment');
+                
+                document.getElementById('reviewId').value = reviewId;
+                document.getElementById('adminComment').value = reviewComment;
+                
+                const commentModal = new bootstrap.Modal(document.getElementById('commentModal'));
+                commentModal.show();
+                
+                // При нажатии кнопки "Сохранить" в модальном окне
+                document.getElementById('saveComment').onclick = function() {
+                    const adminComment = document.getElementById('adminComment').value;
+                    addAdminComment(reviewId, adminComment);
+                    commentModal.hide();
+                };
+            });
+        });
+        
+        // Обработчик для удаления отзыва
+        let reviewToDelete = null;
+        document.querySelectorAll('.delete-review').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                reviewToDelete = this.getAttribute('data-review-id');
+                
+                const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+                deleteModal.show();
+            });
+        });
+        
+        // Подтверждение удаления
+        document.getElementById('confirmDelete').addEventListener('click', function() {
+            if (reviewToDelete) {
+                deleteReview(reviewToDelete);
+                reviewToDelete = null;
+                const deleteModal = document.getElementById('deleteModal');
+                bootstrap.Modal.getInstance(deleteModal).hide();
+            }
+        });
+        
+        // Функция для обновления статуса отзыва
+        function updateReviewStatus(reviewId, status, adminComment = null) {
+            const data = { status: status };
+            if (adminComment !== null) {
+                data.admin_comment = adminComment;
+            }
+            
+            fetch(`/api/reviews/${reviewId}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Перезагружаем страницу для отображения изменений
+                window.location.reload();
+            })
+            .catch(error => {
+                alert(`Ошибка при обновлении статуса отзыва: ${error.detail || 'Неизвестная ошибка'}`);
+            });
+        }
+        
+        // Функция для добавления комментария администратора
+        function addAdminComment(reviewId, adminComment) {
+            fetch(`/api/reviews/${reviewId}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    admin_comment: adminComment
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Перезагружаем страницу для отображения изменений
+                window.location.reload();
+            })
+            .catch(error => {
+                alert(`Ошибка при добавлении комментария: ${error.detail || 'Неизвестная ошибка'}`);
+            });
+        }
+        
+        // Функция для удаления отзыва
+        function deleteReview(reviewId) {
+            fetch(`/api/reviews/${reviewId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Перезагружаем страницу для отображения изменений
+                window.location.reload();
+            })
+            .catch(error => {
+                alert(`Ошибка при удалении отзыва: ${error.detail || 'Неизвестная ошибка'}`);
+            });
+        }
+    });
+</script>
+{% endblock %}

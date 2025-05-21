@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Мои записи - {{ settings.general.salon_name|default('Салон красоты') }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <h1 class="mb-4">Мои записи</h1>
+            
+            <div class="d-flex justify-content-end mb-4">
+                <a href="/services" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Записаться на услугу
+                </a>
+            </div>
+            
+            <!-- Предстоящие записи -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Предстоящие записи</h5>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_appointments %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Услуга</th>
+                                    <th>Дата и время</th>
+                                    <th>Статус</th>
+                                    <th>Примечания</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in upcoming_appointments %}
+                                <tr>
+                                    <td>{{ appointment.service.name }}</td>
+                                    <td>{{ appointment.appointment_time.strftime('%d.%m.%Y %H:%M') }}</td>
+                                    <td>
+                                        {% if appointment.status == 'PENDING' %}
+                                        <span class="badge bg-warning">Ожидает подтверждения</span>
+                                        {% elif appointment.status == 'CONFIRMED' %}
+                                        <span class="badge bg-success">Подтверждено</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if appointment.notes %}
+                                        {{ appointment.notes }}
+                                        {% else %}
+                                        <span class="text-muted">Нет примечаний</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="cancelAppointment({{ appointment.id }})">
+                                            Отменить
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-center py-3">У вас нет предстоящих записей</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Прошедшие записи -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">История посещений</h5>
+                </div>
+                <div class="card-body">
+                    {% if past_appointments %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Услуга</th>
+                                    <th>Дата и время</th>
+                                    <th>Примечания</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in past_appointments %}
+                                <tr>
+                                    <td>{{ appointment.service.name }}</td>
+                                    <td>{{ appointment.appointment_time.strftime('%d.%m.%Y %H:%M') }}</td>
+                                    <td>
+                                        {% if appointment.notes %}
+                                        {{ appointment.notes }}
+                                        {% else %}
+                                        <span class="text-muted">Нет примечаний</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-center py-3">У вас нет истории посещений</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Отмененные записи -->
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Отмененные записи</h5>
+                </div>
+                <div class="card-body">
+                    {% if cancelled_appointments %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Услуга</th>
+                                    <th>Дата и время</th>
+                                    <th>Примечания</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in cancelled_appointments %}
+                                <tr>
+                                    <td>{{ appointment.service.name }}</td>
+                                    <td>{{ appointment.appointment_time.strftime('%d.%m.%Y %H:%M') }}</td>
+                                    <td>
+                                        {% if appointment.notes %}
+                                        {{ appointment.notes }}
+                                        {% else %}
+                                        <span class="text-muted">Нет примечаний</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-center py-3">У вас нет отмененных записей</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function cancelAppointment(appointmentId) {
+        if (confirm('Вы уверены, что хотите отменить запись?')) {
+            fetch(`/api/appointments/${appointmentId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    status: 'CANCELLED'
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Запись успешно отменена:', data);
+                // Перезагружаем страницу для обновления списка
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('Ошибка при отмене записи:', error);
+                alert('Произошла ошибка при отмене записи. Пожалуйста, попробуйте еще раз.');
+            });
+        }
+    }
+</script>
+{% endblock %} 

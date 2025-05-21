@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}Личный кабинет - Салон красоты{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Личный кабинет</h1>
+    
+    <div class="row">
+        <!-- Боковое меню -->
+        <div class="col-md-3 mb-4">
+            <div class="list-group">
+                <a href="#profile-info" class="list-group-item list-group-item-action active" data-bs-toggle="tab">Мои данные</a>
+                <a href="#my-appointments" class="list-group-item list-group-item-action" data-bs-toggle="tab">Мои записи</a>
+                <a href="#change-password" class="list-group-item list-group-item-action" data-bs-toggle="tab">Изменить пароль</a>
+            </div>
+        </div>
+        
+        <!-- Основной контент -->
+        <div class="col-md-9">
+            <div class="tab-content">
+                <!-- Мои данные -->
+                <div class="tab-pane fade show active" id="profile-info">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title mb-4">Мои данные</h3>
+                            
+                            <form id="profile-form">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="name" class="form-label">Имя</label>
+                                        <input type="text" class="form-control" id="name" name="name" value="{{ user.name }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="email" class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}">
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Телефон</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone" value="{{ user.phone }}">
+                                </div>
+                                
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Мои записи -->
+                <div class="tab-pane fade" id="my-appointments">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title mb-4">Мои записи</h3>
+                            
+                            <ul class="nav nav-tabs mb-4">
+                                <li class="nav-item">
+                                    <a class="nav-link active" href="#upcoming" data-bs-toggle="tab">Предстоящие</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#past" data-bs-toggle="tab">Прошедшие</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#cancelled" data-bs-toggle="tab">Отмененные</a>
+                                </li>
+                            </ul>
+                            
+                            <div class="tab-content">
+                                <!-- Предстоящие записи -->
+                                <div class="tab-pane fade show active" id="upcoming">
+                                    {% if upcoming_appointments %}
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Услуга</th>
+                                                    <th>Дата и время</th>
+                                                    <th>Статус</th>
+                                                    <th>Действия</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for appointment in upcoming_appointments %}
+                                                <tr>
+                                                    <td>{{ appointment.service.name }}</td>
+                                                    <td>{{ appointment.appointment_time }}</td>
+                                                    <td>
+                                                        {% if appointment.status == "pending" %}
+                                                        <span class="badge bg-warning">Ожидает подтверждения</span>
+                                                        {% elif appointment.status == "confirmed" %}
+                                                        <span class="badge bg-success">Подтверждено</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-outline-danger cancel-appointment-btn" data-id="{{ appointment.id }}">Отменить</button>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    {% else %}
+                                    <div class="alert alert-info">
+                                        <p class="mb-0">У вас нет предстоящих записей.</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Прошедшие записи -->
+                                <div class="tab-pane fade" id="past">
+                                    {% if past_appointments %}
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Услуга</th>
+                                                    <th>Дата и время</th>
+                                                    <th>Статус</th>
+                                                    <th>Действия</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for appointment in past_appointments %}
+                                                <tr>
+                                                    <td>{{ appointment.service.name }}</td>
+                                                    <td>{{ appointment.appointment_time }}</td>
+                                                    <td>
+                                                        {% if appointment.status == "completed" %}
+                                                        <span class="badge bg-primary">Завершено</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <a href="/services/{{ appointment.service.id }}" class="btn btn-sm btn-outline-primary">Записаться снова</a>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    {% else %}
+                                    <div class="alert alert-info">
+                                        <p class="mb-0">У вас нет прошедших записей.</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Отмененные записи -->
+                                <div class="tab-pane fade" id="cancelled">
+                                    {% if cancelled_appointments %}
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Услуга</th>
+                                                    <th>Дата и время</th>
+                                                    <th>Действия</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for appointment in cancelled_appointments %}
+                                                <tr>
+                                                    <td>{{ appointment.service.name }}</td>
+                                                    <td>{{ appointment.appointment_time }}</td>
+                                                    <td>
+                                                        <a href="/services/{{ appointment.service.id }}" class="btn btn-sm btn-outline-primary">Записаться снова</a>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    {% else %}
+                                    <div class="alert alert-info">
+                                        <p class="mb-0">У вас нет отмененных записей.</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Изменение пароля -->
+                <div class="tab-pane fade" id="change-password">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title mb-4">Изменение пароля</h3>
+                            
+                            <form id="change-password-form">
+                                <div class="mb-3">
+                                    <label for="current-password" class="form-label">Текущий пароль</label>
+                                    <input type="password" class="form-control" id="current-password" name="current_password" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="new-password" class="form-label">Новый пароль</label>
+                                    <input type="password" class="form-control" id="new-password" name="new_password" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="confirm-password" class="form-label">Подтверждение пароля</label>
+                                    <input type="password" class="form-control" id="confirm-password" name="confirm_password" required>
+                                </div>
+                                
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-primary">Изменить пароль</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Обработка формы профиля
+        document.getElementById('profile-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value
+            };
+            
+            // В реальном приложении здесь был бы AJAX-запрос к API
+            console.log('Данные для обновления профиля:', formData);
+            
+            // Демонстрационное поведение
+            alert('Данные профиля успешно обновлены');
+        });
+        
+        // Обработка формы изменения пароля
+        document.getElementById('change-password-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            if (newPassword !== confirmPassword) {
+                alert('Пароли не совпадают');
+                return;
+            }
+            
+            const formData = {
+                current_password: document.getElementById('current-password').value,
+                new_password: newPassword
+            };
+            
+            // В реальном приложении здесь был бы AJAX-запрос к API
+            console.log('Данные для изменения пароля:', formData);
+            
+            // Демонстрационное поведение
+            alert('Пароль успешно изменен');
+            document.getElementById('change-password-form').reset();
+        });
+        
+        // Обработка отмены записи
+        document.querySelectorAll('.cancel-appointment-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const appointmentId = this.getAttribute('data-id');
+                
+                if (confirm('Вы уверены, что хотите отменить запись?')) {
+                    // В реальном приложении здесь был бы AJAX-запрос к API
+                    console.log('Отмена записи с ID:', appointmentId);
+                    
+                    // Демонстрационное поведение
+                    alert('Запись успешно отменена');
+                    this.closest('tr').remove();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Главная - Салон красоты{% endblock %}
+
+{% block content %}
+<!-- Главный баннер -->
+<div class="jumbotron text-center bg-light p-5 rounded-3 mb-4">
+    <h1 class="display-4">Добро пожаловать в наш салон красоты</h1>
+    <p class="lead">Мы предлагаем широкий спектр услуг для сохранения вашей красоты и здоровья</p>
+    <hr class="my-4">
+    <p>Запишитесь на прием прямо сейчас и получите скидку 10% на первое посещение</p>
+    <a class="btn btn-primary btn-lg" href="/services" role="button">Наши услуги</a>
+</div>
+
+<!-- Популярные услуги -->
+<section class="mb-5">
+    <h2 class="text-center mb-4">Популярные услуги</h2>
+    <div class="row">
+        {% for service in popular_services %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                {% if service.image_url %}
+                <img src="{{ service.image_url }}" class="card-img-top" alt="{{ service.name }}">
+                {% else %}
+                <img src="{{ url_for('static', path='/images/default-service.jpg') }}" class="card-img-top" alt="{{ service.name }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ service.name }}</h5>
+                    <p class="card-text">{{ service.description | truncate(100) }}</p>
+                    <p class="card-text text-primary fw-bold">{{ service.price }} ₽</p>
+                </div>
+                <div class="card-footer bg-white border-top-0">
+                    <a href="/services/{{ service.id }}" class="btn btn-outline-primary">Подробнее</a>
+                    <a href="/book/{{ service.id }}" class="btn btn-primary float-end">Записаться</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="text-center mt-4">
+        <a href="/services" class="btn btn-outline-primary">Все услуги</a>
+    </div>
+</section>
+
+<!-- Преимущества -->
+<section class="mb-5 bg-light p-4 rounded-3">
+    <h2 class="text-center mb-4">Почему выбирают нас</h2>
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <div class="text-center">
+                <i class="fas fa-certificate text-primary fa-3x mb-3"></i>
+                <h4>Качество</h4>
+                <p>Мы используем только профессиональную косметику и оборудование</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="text-center">
+                <i class="fas fa-user-md text-primary fa-3x mb-3"></i>
+                <h4>Опыт</h4>
+                <p>Наши мастера имеют многолетний опыт работы и постоянно повышают квалификацию</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="text-center">
+                <i class="fas fa-heart text-primary fa-3x mb-3"></i>
+                <h4>Забота</h4>
+                <p>Индивидуальный подход к каждому клиенту и внимание к деталям</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Отзывы клиентов -->
+<section class="mb-5">
+    <h2 class="text-center mb-4">Отзывы наших клиентов</h2>
+    <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <p class="card-text fst-italic">"Прекрасный салон с отличным обслуживанием! Делала массаж лица и осталась очень довольна. Обязательно вернусь снова!"</p>
+                        <h5 class="card-title">Анна К.</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <p class="card-text fst-italic">"Регулярно посещаю этот салон для общего массажа. Все процедуры выполняются на высшем уровне, а атмосфера располагает к полному расслаблению."</p>
+                        <h5 class="card-title">Сергей П.</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <p class="card-text fst-italic">"Удобная запись через сайт, вежливый персонал и отличные результаты от процедур. Рекомендую!"</p>
+                        <h5 class="card-title">Елена М.</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon bg-primary rounded-circle" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon bg-primary rounded-circle" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+</section>
+
+<!-- Форма обратной связи -->
+<section class="mb-5">
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title text-center mb-4">Остались вопросы?</h3>
+                    <form>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Ваше имя</label>
+                            <input type="text" class="form-control" id="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Сообщение</label>
+                            <textarea class="form-control" id="message" rows="4" required></textarea>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">Отправить</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %} 

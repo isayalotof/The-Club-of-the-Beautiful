@@ -1,0 +1,170 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Настройки салона{% endblock %}
+{% block page_title %}Настройки салона{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Общая информация</h5>
+            </div>
+            <div class="card-body">
+                <form id="generalSettingsForm" action="/admin/settings/general" method="POST">
+                    <div class="mb-3">
+                        <label for="salon_name" class="form-label">Название салона</label>
+                        <input type="text" class="form-control" id="salon_name" name="salon_name" value="{{ settings.salon_name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="salon_description" class="form-label">Описание салона</label>
+                        <textarea class="form-control" id="salon_description" name="salon_description" rows="4">{{ settings.salon_description }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="salon_address" class="form-label">Адрес</label>
+                        <input type="text" class="form-control" id="salon_address" name="salon_address" value="{{ settings.salon_address }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="salon_phone" class="form-label">Телефон</label>
+                        <input type="text" class="form-control" id="salon_phone" name="salon_phone" value="{{ settings.salon_phone }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="salon_email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="salon_email" name="salon_email" value="{{ settings.salon_email }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Расписание работы</h5>
+            </div>
+            <div class="card-body">
+                <form id="scheduleForm" action="/admin/settings/schedule" method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="monday" class="form-label">Понедельник</label>
+                                <input type="text" class="form-control" id="monday" name="monday" value="{{ settings.schedule.monday }}" placeholder="9:00 - 20:00">
+                            </div>
+                            <div class="mb-3">
+                                <label for="tuesday" class="form-label">Вторник</label>
+                                <input type="text" class="form-control" id="tuesday" name="tuesday" value="{{ settings.schedule.tuesday }}" placeholder="9:00 - 20:00">
+                            </div>
+                            <div class="mb-3">
+                                <label for="wednesday" class="form-label">Среда</label>
+                                <input type="text" class="form-control" id="wednesday" name="wednesday" value="{{ settings.schedule.wednesday }}" placeholder="9:00 - 20:00">
+                            </div>
+                            <div class="mb-3">
+                                <label for="thursday" class="form-label">Четверг</label>
+                                <input type="text" class="form-control" id="thursday" name="thursday" value="{{ settings.schedule.thursday }}" placeholder="9:00 - 20:00">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="friday" class="form-label">Пятница</label>
+                                <input type="text" class="form-control" id="friday" name="friday" value="{{ settings.schedule.friday }}" placeholder="9:00 - 20:00">
+                            </div>
+                            <div class="mb-3">
+                                <label for="saturday" class="form-label">Суббота</label>
+                                <input type="text" class="form-control" id="saturday" name="saturday" value="{{ settings.schedule.saturday }}" placeholder="10:00 - 18:00">
+                            </div>
+                            <div class="mb-3">
+                                <label for="sunday" class="form-label">Воскресенье</label>
+                                <input type="text" class="form-control" id="sunday" name="sunday" value="{{ settings.schedule.sunday }}" placeholder="выходной">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Социальные сети</h5>
+            </div>
+            <div class="card-body">
+                <form id="socialForm" action="/admin/settings/social" method="POST">
+                    <div class="mb-3">
+                        <label for="facebook" class="form-label">Facebook</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fab fa-facebook"></i></span>
+                            <input type="url" class="form-control" id="facebook" name="facebook" value="{{ settings.social.facebook }}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="instagram" class="form-label">Instagram</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fab fa-instagram"></i></span>
+                            <input type="url" class="form-control" id="instagram" name="instagram" value="{{ settings.social.instagram }}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="vk" class="form-label">ВКонтакте</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fab fa-vk"></i></span>
+                            <input type="url" class="form-control" id="vk" name="vk" value="{{ settings.social.vk }}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="telegram" class="form-label">Telegram</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fab fa-telegram"></i></span>
+                            <input type="url" class="form-control" id="telegram" name="telegram" value="{{ settings.social.telegram }}">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Настройки SEO</h5>
+            </div>
+            <div class="card-body">
+                <form id="seoForm" action="/admin/settings/seo" method="POST">
+                    <div class="mb-3">
+                        <label for="meta_title" class="form-label">Meta Title</label>
+                        <input type="text" class="form-control" id="meta_title" name="meta_title" value="{{ settings.seo.meta_title }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="meta_description" class="form-label">Meta Description</label>
+                        <textarea class="form-control" id="meta_description" name="meta_description" rows="3">{{ settings.seo.meta_description }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="meta_keywords" class="form-label">Meta Keywords</label>
+                        <input type="text" class="form-control" id="meta_keywords" name="meta_keywords" value="{{ settings.seo.meta_keywords }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Загрузка логотипа</h5>
+            </div>
+            <div class="card-body">
+                <form id="logoForm" action="/admin/settings/logo" method="POST" enctype="multipart/form-data">
+                    {% if settings.logo_url %}
+                    <div class="mb-3 text-center">
+                        <img src="{{ settings.logo_url }}" alt="Логотип салона" class="img-fluid" style="max-height: 100px;">
+                    </div>
+                    {% endif %}
+                    <div class="mb-3">
+                        <label for="logo" class="form-label">Выберите новый логотип</label>
+                        <input type="file" class="form-control" id="logo" name="logo" accept="image/*">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Загрузить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Запись подтверждена - {{ settings.general.salon_name|default('Салон красоты') }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-check-circle text-success fa-5x mb-4"></i>
+                    <h2 class="mb-4">Запись успешно создана!</h2>
+                    <p class="lead mb-4">Спасибо, {{ user.name }}! Ваша запись была успешно создана и отправлена на подтверждение администратором.</p>
+                    <p class="mb-4">Мы свяжемся с вами в ближайшее время для подтверждения записи. Также вы можете просмотреть статус вашей записи в личном кабинете.</p>
+                    
+                    <div class="d-flex justify-content-center mt-4">
+                        <a href="/profile" class="btn btn-primary me-2">
+                            <i class="fas fa-user me-2"></i>Перейти в личный кабинет
+                        </a>
+                        <a href="/services" class="btn btn-outline-primary">
+                            <i class="fas fa-list me-2"></i>Посмотреть другие услуги
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Что дальше?</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex">
+                            <i class="fas fa-calendar-check text-primary me-3 mt-1"></i>
+                            <div>
+                                <h6>Ожидайте подтверждения</h6>
+                                <p class="text-muted mb-0">Администратор рассмотрит вашу заявку и подтвердит запись в ближайшее время.</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <i class="fas fa-bell text-primary me-3 mt-1"></i>
+                            <div>
+                                <h6>Напоминание</h6>
+                                <p class="text-muted mb-0">Мы отправим вам напоминание о записи за 24 часа до назначенного времени.</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <i class="fas fa-phone text-primary me-3 mt-1"></i>
+                            <div>
+                                <h6>Контактная информация</h6>
+                                <p class="text-muted mb-0">
+                                    {% if settings.general and settings.general.salon_phone %}
+                                    Если у вас возникли вопросы, позвоните нам: {{ settings.general.salon_phone }}
+                                    {% else %}
+                                    Если у вас возникли вопросы, позвоните нам: +7 (999) 123-45-67
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

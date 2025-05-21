@@ -1,0 +1,122 @@
+/* Стили для админ-панели */
+
+/* Боковое меню */
+.sidebar {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px 0;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+}
+
+.sidebar .nav-item {
+    width: 100%;
+}
+
+.sidebar .nav-link {
+    padding: 10px 20px;
+    color: #495057;
+    border-radius: 0;
+}
+
+.sidebar .nav-link:hover {
+    color: #007bff;
+    background-color: #f8f9fa;
+}
+
+.sidebar .nav-link.active {
+    color: #007bff;
+    font-weight: bold;
+    background-color: #f0f7ff;
+    border-left: 3px solid #007bff;
+}
+
+.sidebar .nav-link i {
+    margin-right: 10px;
+}
+
+/* Карточки на дашборде */
+.card {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    border: none;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+    padding: 15px 20px;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+/* Таблицы */
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+/* Формы */
+.form-label {
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+}
+
+/* Кнопки действий в таблицах */
+.btn-group .btn {
+    margin-right: 5px;
+}
+
+/* Пагинация */
+.pagination {
+    margin-bottom: 0;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .sidebar {
+        height: auto;
+        position: relative;
+    }
+}
+
+/* Анимации */
+.card, .btn, .nav-link {
+    transition: all 0.3s ease;
+}
+
+/* Статистика на дашборде */
+.card i.fa-3x {
+    opacity: 0.7;
+}
+
+/* Модальные окна */
+.modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #eee;
+}
+
+/* Загрузка изображений */
+#current_image_container {
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    text-align: center;
+} 

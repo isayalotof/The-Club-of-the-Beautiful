@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Отзывы клиентов - {{ settings.general.salon_name|default('Салон красоты') }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Отзывы наших клиентов</h1>
+    
+    <!-- Фильтр по услугам -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form action="/reviews" method="get" class="row g-3 align-items-end">
+                <div class="col-md-6">
+                    <label for="service_id" class="form-label">Фильтр по услуге</label>
+                    <select name="service_id" id="service_id" class="form-select">
+                        <option value="">Все услуги</option>
+                        {% for service in services %}
+                        <option value="{{ service.id }}" {% if selected_service and selected_service.id == service.id %}selected{% endif %}>
+                            {{ service.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Применить</button>
+                </div>
+                {% if selected_service %}
+                <div class="col-md-2">
+                    <a href="/reviews" class="btn btn-outline-secondary w-100">Сбросить</a>
+                </div>
+                {% endif %}
+                {% if user %}
+                <div class="col-md-2">
+                    <a href="/reviews/add" class="btn btn-success w-100">Добавить отзыв</a>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    
+    {% if selected_service %}
+    <div class="alert alert-info mb-4">
+        <h5 class="mb-1">Отзывы об услуге: {{ selected_service.name }}</h5>
+        <p class="mb-0">
+            Цена: {{ selected_service.price }} ₽ | 
+            Продолжительность: {{ selected_service.duration }} мин. | 
+            <a href="/services/{{ selected_service.id }}" class="text-decoration-none">Подробнее об услуге</a>
+        </p>
+    </div>
+    {% endif %}
+    
+    <!-- Список отзывов -->
+    {% if reviews %}
+    <div class="row">
+        {% for review in reviews %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ review.user.name }}</strong>
+                        <div class="text-muted small">{{ review.created_at.strftime('%d.%m.%Y %H:%M') }}</div>
+                    </div>
+                    <div>
+                        {% for i in range(1, 6) %}
+                        <i class="fas fa-star {% if i <= review.rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if review.service %}
+                    <p class="mb-2 text-primary">
+                        <i class="fas fa-spa me-1"></i> {{ review.service.name }}
+                    </p>
+                    {% endif %}
+                    <p class="card-text">{{ review.text }}</p>
+                </div>
+                {% if review.admin_comment %}
+                <div class="card-footer bg-light">
+                    <p class="mb-0">
+                        <strong>Комментарий администратора:</strong><br>
+                        {{ review.admin_comment }}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Пагинация -->
+    {% if total_pages > 1 %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% for p in range(1, total_pages + 1) %}
+            <li class="page-item {% if p == page %}active{% endif %}">
+                <a class="page-link" href="/reviews?page={{ p }}{% if selected_service %}&service_id={{ selected_service.id }}{% endif %}">{{ p }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <div class="alert alert-info">
+        <p class="mb-0">
+            {% if selected_service %}
+            Пока нет отзывов об услуге "{{ selected_service.name }}".
+            {% if user %}
+            <a href="/reviews/add?service_id={{ selected_service.id }}" class="alert-link">Будьте первым, кто оставит отзыв!</a>
+            {% else %}
+            <a href="/login?next=/reviews/add?service_id={{ selected_service.id }}" class="alert-link">Войдите, чтобы оставить первый отзыв!</a>
+            {% endif %}
+            {% else %}
+            Пока нет отзывов.
+            {% if user %}
+            <a href="/reviews/add" class="alert-link">Будьте первым, кто оставит отзыв!</a>
+            {% else %}
+            <a href="/login?next=/reviews/add" class="alert-link">Войдите, чтобы оставить первый отзыв!</a>
+            {% endif %}
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

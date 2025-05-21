@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Услуги - Салон красоты{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">Наши услуги</h1>
+    
+    <!-- Фильтры услуг -->
+    <div class="row mb-4">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Фильтр услуг</h5>
+                    <form id="filter-form" class="row g-3">
+                        <div class="col-md-6">
+                            <label for="category" class="form-label">Категория</label>
+                            <select class="form-select" id="category" name="category">
+                                <option value="">Все категории</option>
+                                {% for category in categories %}
+                                <option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>{{ category }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="sort" class="form-label">Сортировка</label>
+                            <select class="form-select" id="sort" name="sort">
+                                <option value="name" {% if sort == 'name' %}selected{% endif %}>По названию</option>
+                                <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Цена (по возрастанию)</option>
+                                <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Цена (по убыванию)</option>
+                                <option value="duration" {% if sort == 'duration' %}selected{% endif %}>По длительности</option>
+                            </select>
+                        </div>
+                        <div class="col-12 text-center">
+                            <button type="submit" class="btn btn-primary">Применить</button>
+                            <button type="button" id="reset-filter" class="btn btn-outline-secondary">Сбросить</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Список услуг -->
+    <div class="row">
+        {% for service in services %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                {% if service.image_url %}
+                <img src="{{ service.image_url }}" class="card-img-top" alt="{{ service.name }}">
+                {% else %}
+                <img src="{{ url_for('static', path='/images/default-service.jpg') }}" class="card-img-top" alt="{{ service.name }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ service.name }}</h5>
+                    <p class="card-text">{{ service.description | truncate(150) }}</p>
+                    <p class="card-text"><strong>Категория:</strong> {{ service.category }}</p>
+                    <p class="card-text"><strong>Длительность:</strong> {{ service.duration }} мин.</p>
+                    <p class="card-text text-primary fw-bold">{{ service.price }} ₽</p>
+                </div>
+                <div class="card-footer bg-white border-top-0">
+                    <a href="/services/{{ service.id }}" class="btn btn-outline-primary">Подробнее</a>
+                    <a href="/book/{{ service.id }}" class="btn btn-primary float-end">Записаться</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Пагинация -->
+    {% if total_pages > 1 %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <nav aria-label="Pagination">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                        <a class="page-link" href="?page={{ page - 1 }}&category={{ selected_category }}&sort={{ sort }}" tabindex="-1" aria-disabled="true">Предыдущая</a>
+                    </li>
+                    
+                    {% for p in range(1, total_pages + 1) %}
+                    <li class="page-item {% if p == page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ p }}&category={{ selected_category }}&sort={{ sort }}">{{ p }}</a>
+                    </li>
+                    {% endfor %}
+                    
+                    <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                        <a class="page-link" href="?page={{ page + 1 }}&category={{ selected_category }}&sort={{ sort }}">Следующая</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Отправка формы фильтрации при изменении значений
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('category').addEventListener('change', function() {
+            document.getElementById('filter-form').submit();
+        });
+        
+        document.getElementById('sort').addEventListener('change', function() {
+            document.getElementById('filter-form').submit();
+        });
+        
+        // Сброс фильтров
+        document.getElementById('reset-filter').addEventListener('click', function() {
+            window.location.href = '/services';
+        });
+    });
+</script>
+{% endblock %} 

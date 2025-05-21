@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Вход - Салон красоты{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="card mt-5">
+                <div class="card-body">
+                    <h2 class="card-title text-center mb-4">Вход в личный кабинет</h2>
+                    
+                    <div id="errorMessage" class="alert alert-danger" role="alert" style="display: none;"></div>
+                    {% if error %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ error }}
+                    </div>
+                    {% endif %}
+                    
+                    <form id="loginForm" method="post" action="/login" onsubmit="submitForm(event)">
+                        {% if next %}
+                        <input type="hidden" name="next" id="next" value="{{ next }}">
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Пароль</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary" id="loginButton">Войти</button>
+                            <div class="text-center mt-2">
+                                <span id="status" style="display: none;">Отправка...</span>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-4 text-center">
+                        <p>Нет аккаунта? <a href="/register{% if next %}?next={{ next }}{% endif %}">Зарегистрироваться</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function submitForm(event) {
+        event.preventDefault();
+        
+        const statusElem = document.getElementById('status');
+        const errorMessageElem = document.getElementById('errorMessage');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const nextInput = document.getElementById('next');
+        
+        // Показываем статус
+        statusElem.style.display = 'inline';
+        errorMessageElem.style.display = 'none';
+        
+        // Собираем данные формы
+        const formData = new FormData();
+        formData.append('email', emailInput.value);
+        formData.append('password', passwordInput.value);
+        if (nextInput) {
+            formData.append('next', nextInput.value);
+        }
+
+        // Отправляем запрос
+        fetch('/login', {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+                return;
+            }
+            
+            if (response.ok) {
+                // Если не было перенаправления, но запрос успешный - перезагружаем страницу
+                window.location.href = '/';
+                return;
+            }
+            
+            // Если ответ не успешный
+            return response.text().then(html => {
+                // Ищем сообщение об ошибке в HTML
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const errorDiv = doc.querySelector('.alert-danger');
+                if (errorDiv) {
+                    throw new Error(errorDiv.textContent.trim());
+                } else {
+                    throw new Error('Неизвестная ошибка при входе');
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            errorMessageElem.textContent = error.message || 'Произошла ошибка при входе в систему';
+            errorMessageElem.style.display = 'block';
+            statusElem.style.display = 'none';
+        });
+    }
+</script>
+{% endblock %} 

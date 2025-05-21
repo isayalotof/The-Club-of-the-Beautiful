@@ -1,0 +1,141 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Дашборд{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Услуги</h5>
+                        <h2>{{ stats.services_count }}</h2>
+                    </div>
+                    <i class="fas fa-spa fa-3x"></i>
+                </div>
+                <p>Всего услуг в каталоге</p>
+                <a href="/admin/services" class="btn btn-light btn-sm">Управление услугами</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Записи</h5>
+                        <h2>{{ stats.appointments_count }}</h2>
+                    </div>
+                    <i class="fas fa-calendar-alt fa-3x"></i>
+                </div>
+                <p>Активных записей на услуги</p>
+                <a href="/admin/appointments" class="btn btn-light btn-sm">Управление записями</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Пользователи</h5>
+                        <h2>{{ stats.users_count }}</h2>
+                    </div>
+                    <i class="fas fa-users fa-3x"></i>
+                </div>
+                <p>Зарегистрированных пользователей</p>
+                <a href="/admin/users" class="btn btn-light btn-sm">Управление пользователями</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Последние записи</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_appointments %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Клиент</th>
+                                <th>Услуга</th>
+                                <th>Дата</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in recent_appointments %}
+                            <tr>
+                                <td>{{ appointment.user.name }}</td>
+                                <td>{{ appointment.service.name }}</td>
+                                <td>{{ appointment.appointment_time.strftime('%d.%m.%Y %H:%M') }}</td>
+                                <td>
+                                    {% if appointment.status == 'pending' %}
+                                    <span class="badge bg-warning">Ожидание</span>
+                                    {% elif appointment.status == 'confirmed' %}
+                                    <span class="badge bg-primary">Подтверждено</span>
+                                    {% elif appointment.status == 'completed' %}
+                                    <span class="badge bg-success">Завершено</span>
+                                    {% elif appointment.status == 'cancelled' %}
+                                    <span class="badge bg-danger">Отменено</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">Нет последних записей</p>
+                {% endif %}
+                <a href="/admin/appointments" class="btn btn-primary btn-sm mt-2">Все записи</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Популярные услуги</h5>
+            </div>
+            <div class="card-body">
+                {% if popular_services %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Услуга</th>
+                                <th>Категория</th>
+                                <th>Цена</th>
+                                <th>Записей</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for service in popular_services %}
+                            <tr>
+                                <td>{{ service.name }}</td>
+                                <td>{{ service.category }}</td>
+                                <td>{{ service.price }} ₽</td>
+                                <td>{{ service.bookings_count }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">Нет популярных услуг</p>
+                {% endif %}
+                <a href="/admin/services" class="btn btn-primary btn-sm mt-2">Все услуги</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Добавить отзыв - {{ settings.general.salon_name|default('Салон красоты') }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h1 class="h4 mb-0">Добавить отзыв</h1>
+                </div>
+                <div class="card-body">
+                    {% if not service and not services and not appointment and not completed_appointments %}
+                    <div class="alert alert-warning">
+                        <p class="mb-0">У вас пока нет завершенных услуг, о которых можно оставить отзыв.</p>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="/services" class="btn btn-primary">Перейти к услугам</a>
+                    </div>
+                    {% elif not service and not appointment %}
+                    <!-- Шаг 1: Выбор услуги или записи -->
+                    <form id="select-service-form" action="/reviews/add" method="get">
+                        <div class="mb-4">
+                            <h5>Вы хотите оставить отзыв:</h5>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="review_type" id="review_type_service" value="service" checked>
+                                <label class="form-check-label" for="review_type_service">
+                                    Об услуге
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="review_type" id="review_type_appointment" value="appointment">
+                                <label class="form-check-label" for="review_type_appointment">
+                                    О конкретном посещении
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div id="service-select-container" class="mb-4">
+                            <label for="service_id" class="form-label">Выберите услугу</label>
+                            <select name="service_id" id="service_id" class="form-select" required>
+                                <option value="">-- Выберите услугу --</option>
+                                {% for service in services %}
+                                <option value="{{ service.id }}">{{ service.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div id="appointment-select-container" class="mb-4 d-none">
+                            <label for="appointment_id" class="form-label">Выберите посещение</label>
+                            {% if completed_appointments %}
+                            <select name="appointment_id" id="appointment_id" class="form-select">
+                                <option value="">-- Выберите посещение --</option>
+                                {% for appt in completed_appointments %}
+                                <option value="{{ appt.id }}">{{ appt.appointment_time.strftime('%d.%m.%Y %H:%M') }} - {{ appt.service.name }}</option>
+                                {% endfor %}
+                            </select>
+                            {% else %}
+                            <div class="alert alert-warning">
+                                <p class="mb-0">У вас пока нет завершенных посещений, о которых можно оставить отзыв.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="/reviews" class="btn btn-secondary">Отмена</a>
+                            <button type="submit" class="btn btn-primary">Продолжить</button>
+                        </div>
+                    </form>
+                    {% else %}
+                    <!-- Шаг 2: Форма отзыва -->
+                    <form id="review-form" action="/api/reviews" method="post">
+                        {% if service %}
+                        <input type="hidden" name="service_id" value="{{ service.id }}">
+                        <div class="mb-4">
+                            <h5>Отзыв об услуге: {{ service.name }}</h5>
+                        </div>
+                        {% endif %}
+                        
+                        {% if appointment %}
+                        <input type="hidden" name="appointment_id" value="{{ appointment.id }}">
+                        <div class="mb-4">
+                            <h5>Отзыв о посещении:</h5>
+                            <p>{{ appointment.appointment_time.strftime('%d.%m.%Y %H:%M') }} - {{ appointment.service.name }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-4">
+                            <label class="form-label">Оценка</label>
+                            <div class="star-rating">
+                                <div class="d-flex">
+                                    {% for i in range(1, 6) %}
+                                    <div class="star-container me-2" data-rating="{{ i }}">
+                                        <i class="far fa-star fs-3 star-icon"></i>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <input type="hidden" name="rating" id="rating-input" value="5" required>
+                                <div class="text-muted mt-1">Выберите количество звезд</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="review-text" class="form-label">Ваш отзыв</label>
+                            <textarea class="form-control" id="review-text" name="text" rows="5" placeholder="Поделитесь своими впечатлениями..." required minlength="10" maxlength="1000"></textarea>
+                            <div class="form-text">Минимум 10 символов, максимум 1000</div>
+                        </div>
+                        
+                        <div class="alert alert-info mb-4">
+                            <p class="mb-0"><i class="fas fa-info-circle me-2"></i> Ваш отзыв будет опубликован после проверки администратором.</p>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="/reviews" class="btn btn-secondary">Отмена</a>
+                            <button type="submit" class="btn btn-primary">Отправить отзыв</button>
+                        </div>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Переключение между типами отзывов (услуга/запись)
+        const reviewTypeService = document.getElementById('review_type_service');
+        const reviewTypeAppointment = document.getElementById('review_type_appointment');
+        const serviceSelectContainer = document.getElementById('service-select-container');
+        const appointmentSelectContainer = document.getElementById('appointment-select-container');
+        const serviceSelect = document.getElementById('service_id');
+        const appointmentSelect = document.getElementById('appointment_id');
+        
+        if (reviewTypeService && reviewTypeAppointment) {
+            reviewTypeService.addEventListener('change', function() {
+                if (this.checked) {
+                    serviceSelectContainer.classList.remove('d-none');
+                    appointmentSelectContainer.classList.add('d-none');
+                    serviceSelect.setAttribute('required', '');
+                    appointmentSelect.removeAttribute('required');
+                }
+            });
+            
+            reviewTypeAppointment.addEventListener('change', function() {
+                if (this.checked) {
+                    serviceSelectContainer.classList.add('d-none');
+                    appointmentSelectContainer.classList.remove('d-none');
+                    serviceSelect.removeAttribute('required');
+                    appointmentSelect.setAttribute('required', '');
+                }
+            });
+        }
+        
+        // Обработка звездного рейтинга
+        const starContainers = document.querySelectorAll('.star-container');
+        const ratingInput = document.getElementById('rating-input');
+        
+        if (starContainers.length > 0 && ratingInput) {
+            // Установка начального значения (5 звезд)
+            setRating(5);
+            
+            starContainers.forEach(container => {
+                container.addEventListener('click', function() {
+                    const rating = parseInt(this.getAttribute('data-rating'));
+                    setRating(rating);
+                });
+                
+                container.addEventListener('mouseenter', function() {
+                    const rating = parseInt(this.getAttribute('data-rating'));
+                    highlightStars(rating);
+                });
+            });
+            
+            const starRating = document.querySelector('.star-rating');
+            if (starRating) {
+                starRating.addEventListener('mouseleave', function() {
+                    const currentRating = parseInt(ratingInput.value);
+                    highlightStars(currentRating);
+                });
+            }
+        }
+        
+        function setRating(rating) {
+            ratingInput.value = rating;
+            highlightStars(rating);
+        }
+        
+        function highlightStars(rating) {
+            starContainers.forEach(container => {
+                const containerRating = parseInt(container.getAttribute('data-rating'));
+                const starIcon = container.querySelector('.star-icon');
+                
+                if (containerRating <= rating) {
+                    starIcon.classList.remove('far');
+                    starIcon.classList.add('fas');
+                    starIcon.classList.add('text-warning');
+                } else {
+                    starIcon.classList.remove('fas');
+                    starIcon.classList.remove('text-warning');
+                    starIcon.classList.add('far');
+                }
+            });
+        }
+        
+        // Обработка отправки формы отзыва через AJAX
+        const reviewForm = document.getElementById('review-form');
+        if (reviewForm) {
+            reviewForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const rating = document.getElementById('rating-input').value;
+                const text = document.getElementById('review-text').value;
+                const serviceId = document.querySelector('input[name="service_id"]')?.value;
+                const appointmentId = document.querySelector('input[name="appointment_id"]')?.value;
+                
+                const data = {
+                    rating: parseInt(rating),
+                    text: text
+                };
+                
+                if (serviceId) {
+                    data.service_id = parseInt(serviceId);
+                }
+                
+                if (appointmentId) {
+                    data.appointment_id = parseInt(appointmentId);
+                }
+                
+                fetch('/api/reviews', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw err; });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Успешно отправлен отзыв
+                    window.location.href = '/reviews?message=review_submitted';
+                })
+                .catch(error => {
+                    alert('Произошла ошибка при отправке отзыва: ' + (error.detail || 'Неизвестная ошибка'));
+                });
+            });
+        }
+    });
+</script>
+{% endblock %} 

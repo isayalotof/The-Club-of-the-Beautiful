@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}
+        {% if settings.seo and settings.seo.meta_title %}
+            {{ settings.seo.meta_title }}
+        {% else %}
+            Салон красоты
+        {% endif %}
+    {% endblock %}</title>
+    
+    {% if settings.seo and settings.seo.meta_description %}
+    <meta name="description" content="{{ settings.seo.meta_description }}">
+    {% endif %}
+    
+    {% if settings.seo and settings.seo.meta_keywords %}
+    <meta name="keywords" content="{{ settings.seo.meta_keywords }}">
+    {% endif %}
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                {% if settings.logo_url %}
+                <img src="{{ settings.logo_url }}" alt="{{ settings.general.salon_name|default('Салон красоты') }}" height="30" class="d-inline-block align-text-top me-2">
+                {% endif %}
+                {{ settings.general.salon_name|default('Салон красоты') }}
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/services">Услуги</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/about">О нас</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/contact">Контакты</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    {% if user %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            {{ user.name }}
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="/profile">Мой профиль</a></li>
+                            <li><a class="dropdown-item" href="/appointments">Мои записи</a></li>
+                            {% if user.is_admin %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/admin">Админ панель</a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/logout">Выйти</a></li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login">Войти</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/register">Регистрация</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Основное содержимое -->
+    <main class="container py-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Подвал -->
+    <footer class="bg-dark text-light py-4 mt-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>О нас</h5>
+                    {% if settings.general and settings.general.salon_description %}
+                    <p>{{ settings.general.salon_description }}</p>
+                    {% else %}
+                    <p>Салон красоты предоставляет широкий спектр услуг по уходу за лицом, телом и различные виды массажа.</p>
+                    {% endif %}
+                </div>
+                <div class="col-md-4">
+                    <h5>Контакты</h5>
+                    <p><i class="fas fa-map-marker-alt"></i> Адрес: 
+                        {% if settings.general and settings.general.salon_address %}
+                        {{ settings.general.salon_address }}
+                        {% else %}
+                        г. Москва, ул. Примерная, д. 123
+                        {% endif %}
+                    </p>
+                    <p><i class="fas fa-phone"></i> Телефон: 
+                        {% if settings.general and settings.general.salon_phone %}
+                        {{ settings.general.salon_phone }}
+                        {% else %}
+                        +7 (999) 123-45-67
+                        {% endif %}
+                    </p>
+                    <p><i class="fas fa-envelope"></i> Email: 
+                        {% if settings.general and settings.general.salon_email %}
+                        {{ settings.general.salon_email }}
+                        {% else %}
+                        info@salon.ru
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Режим работы</h5>
+                    {% if settings.schedule %}
+                    <p>Пн: {{ settings.schedule.monday|default('9:00 - 20:00') }}</p>
+                    <p>Вт: {{ settings.schedule.tuesday|default('9:00 - 20:00') }}</p>
+                    <p>Ср: {{ settings.schedule.wednesday|default('9:00 - 20:00') }}</p>
+                    <p>Чт: {{ settings.schedule.thursday|default('9:00 - 20:00') }}</p>
+                    <p>Пт: {{ settings.schedule.friday|default('9:00 - 20:00') }}</p>
+                    <p>Сб: {{ settings.schedule.saturday|default('10:00 - 18:00') }}</p>
+                    <p>Вс: {{ settings.schedule.sunday|default('выходной') }}</p>
+                    {% else %}
+                    <p>Пн-Пт: 9:00 - 20:00</p>
+                    <p>Сб: 10:00 - 18:00</p>
+                    <p>Вс: выходной</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% if settings.social %}
+            <div class="row mt-3">
+                <div class="col-12 text-center">
+                    <div class="social-links">
+                        {% if settings.social.facebook %}
+                        <a href="{{ settings.social.facebook }}" class="me-3" target="_blank"><i class="fab fa-facebook fa-lg"></i></a>
+                        {% endif %}
+                        {% if settings.social.instagram %}
+                        <a href="{{ settings.social.instagram }}" class="me-3" target="_blank"><i class="fab fa-instagram fa-lg"></i></a>
+                        {% endif %}
+                        {% if settings.social.vk %}
+                        <a href="{{ settings.social.vk }}" class="me-3" target="_blank"><i class="fab fa-vk fa-lg"></i></a>
+                        {% endif %}
+                        {% if settings.social.telegram %}
+                        <a href="{{ settings.social.telegram }}" class="me-3" target="_blank"><i class="fab fa-telegram fa-lg"></i></a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            <div class="row mt-3">
+                <div class="col-12 text-center">
+                    <p>&copy; {{ now().year }} {{ settings.general.salon_name|default('Салон красоты') }}. Все права защищены.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', path='/js/script.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

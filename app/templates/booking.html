@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Запись на {{ service.name }} - Салон красоты{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Главная</a></li>
+                    <li class="breadcrumb-item"><a href="/services">Услуги</a></li>
+                    <li class="breadcrumb-item"><a href="/services/{{ service.id }}">{{ service.name }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Запись</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title text-center mb-4">Запись на услугу</h2>
+                    
+                    <div class="alert alert-info mb-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h4>{{ service.name }}</h4>
+                                <p class="mb-1"><strong>Длительность:</strong> {{ service.duration }} минут</p>
+                                <p class="mb-1"><strong>Цена:</strong> {{ service.price }} ₽</p>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <a href="/services/{{ service.id }}" class="btn btn-outline-primary">Изменить услугу</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form id="booking-form" action="/api/appointments" method="post">
+                        <input type="hidden" name="service_id" value="{{ service.id }}">
+                        
+                        <div class="mb-4">
+                            <label for="date" class="form-label">Выберите дату</label>
+                            <input type="text" class="form-control" id="date" name="date" required>
+                            <div class="form-text">Выберите удобную для вас дату.</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label">Выберите время</label>
+                            <div class="time-slots row" id="time-slots">
+                                <p class="text-center">Сначала выберите дату, чтобы увидеть доступное время.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="notes" class="form-label">Дополнительные пожелания</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                            <div class="form-text">Напишите любые пожелания или особенности, которые мы должны учесть.</div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">Записаться</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Инициализация выбора даты
+        const today = new Date();
+        const maxDate = new Date();
+        maxDate.setMonth(today.getMonth() + 2); // Запись на 2 месяца вперед
+        
+        flatpickr("#date", {
+            locale: "ru",
+            dateFormat: "Y-m-d",
+            minDate: "today",
+            maxDate: maxDate,
+            disable: [
+                function(date) {
+                    // Отключаем воскресенья
+                    return (date.getDay() === 0);
+                }
+            ],
+            onChange: function(selectedDates, dateStr) {
+                loadAvailableTimeSlots(dateStr);
+            }
+        });
+        
+        // Функция загрузки доступного времени
+        function loadAvailableTimeSlots(date) {
+            const timeSlotsContainer = document.getElementById('time-slots');
+            
+            // В реальном приложении здесь был бы AJAX-запрос к серверу
+            // для получения доступных слотов времени на выбранную дату
+            
+            // Демонстрационные данные
+            const timeSlots = [
+                {time: "09:00", available: true},
+                {time: "10:00", available: true},
+                {time: "11:00", available: true},
+                {time: "12:00", available: false},
+                {time: "13:00", available: false},
+                {time: "14:00", available: true},
+                {time: "15:00", available: true},
+                {time: "16:00", available: true},
+                {time: "17:00", available: true},
+                {time: "18:00", available: false},
+                {time: "19:00", available: true}
+            ];
+            
+            // Очищаем контейнер
+            timeSlotsContainer.innerHTML = '';
+            
+            // Добавляем доступные слоты времени
+            timeSlots.forEach(slot => {
+                const col = document.createElement('div');
+                col.className = 'col-md-3 col-6 mb-3';
+                
+                const label = document.createElement('label');
+                label.className = 'time-slot w-100 btn ' + 
+                    (slot.available ? 'btn-outline-primary' : 'btn-outline-secondary disabled');
+                
+                const input = document.createElement('input');
+                input.type = 'radio';
+                input.name = 'time';
+                input.value = slot.time;
+                input.className = 'd-none';
+                if (!slot.available) {
+                    input.disabled = true;
+                }
+                
+                label.appendChild(input);
+                label.appendChild(document.createTextNode(slot.time));
+                
+                col.appendChild(label);
+                timeSlotsContainer.appendChild(col);
+                
+                // Добавляем обработчик выбора времени
+                if (slot.available) {
+                    label.addEventListener('click', function() {
+                        document.querySelectorAll('.time-slot').forEach(el => {
+                            el.classList.remove('btn-primary');
+                            el.classList.add('btn-outline-primary');
+                        });
+                        label.classList.remove('btn-outline-primary');
+                        label.classList.add('btn-primary');
+                    });
+                }
+            });
+        }
+        
+        // Обработка отправки формы
+        document.getElementById('booking-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Получаем выбранную дату и время
+            const date = document.getElementById('date').value;
+            const timeInput = document.querySelector('input[name="time"]:checked');
+            
+            if (!date || !timeInput) {
+                alert('Пожалуйста, выберите дату и время');
+                return;
+            }
+            
+            const time = timeInput.value;
+            const notes = document.getElementById('notes').value;
+            const serviceId = document.querySelector('input[name="service_id"]').value;
+            
+            // Формируем дату и время для отправки на сервер
+            const appointmentTime = date + 'T' + time + ':00';
+            
+            // AJAX-запрос к API для создания записи
+            fetch('/api/appointments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    service_id: parseInt(serviceId),
+                    appointment_time: appointmentTime,
+                    notes: notes
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Запись успешно создана:', data);
+                window.location.href = '/booking-success';
+            })
+            .catch(error => {
+                console.error('Ошибка при создании записи:', error);
+                alert('Произошла ошибка при создании записи. Пожалуйста, попробуйте еще раз.');
+            });
+        });
+    });
+</script>
+{% endblock %} 

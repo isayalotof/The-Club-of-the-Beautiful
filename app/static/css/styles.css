@@ -1,0 +1,160 @@
+/* Общие стили */
+body {
+    font-family: 'Roboto', sans-serif;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Стили для навигационной панели */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    font-weight: 700;
+}
+
+/* Стили для карточек услуг */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 20px;
+    border: none;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+.card-title {
+    font-weight: 600;
+    color: #212529;
+}
+
+.card-footer {
+    background-color: transparent;
+}
+
+/* Стили для кнопок */
+.btn-primary {
+    padding: 8px 20px;
+    border-radius: 4px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Стили для слайдера отзывов */
+.carousel-item {
+    padding: 20px;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    padding: 15px;
+}
+
+/* Стили для форм */
+.form-control {
+    border-radius: 4px;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Стили для подвала */
+footer {
+    margin-top: 50px;
+}
+
+/* Стили для страницы бронирования */
+.time-slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    transition: all 0.3s ease;
+}
+
+.time-slot:hover {
+    transform: scale(1.05);
+}
+
+/* Стили для личного кабинета */
+.list-group-item.active {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* Стили для баннера на главной странице */
+.jumbotron {
+    background-color: #f8f9fa;
+    margin-bottom: 2rem;
+    padding: 2rem;
+}
+
+/* Стили для значков */
+.fa-3x {
+    margin-bottom: 1rem;
+}
+
+/* Адаптивные стили */
+@media (max-width: 768px) {
+    .card-img-top {
+        height: 180px;
+    }
+    
+    .jumbotron {
+        padding: 1.5rem;
+    }
+    
+    .display-4 {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .card-img-top {
+        height: 150px;
+    }
+    
+    .display-4 {
+        font-size: 2rem;
+    }
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+} 

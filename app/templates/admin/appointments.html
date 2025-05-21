@@ -1,0 +1,191 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Управление записями{% endblock %}
+{% block page_title %}Управление записями{% endblock %}
+
+{% block content %}
+{% if selected_user %}
+<div class="alert alert-info mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="mb-1">Записи клиента: {{ selected_user.name }}</h5>
+            <p class="mb-0">Email: {{ selected_user.email }} | Телефон: {{ selected_user.phone }}</p>
+        </div>
+        <a href="/admin/appointments" class="btn btn-sm btn-outline-primary">Сбросить фильтр</a>
+    </div>
+</div>
+{% endif %}
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Фильтры</h5>
+    </div>
+    <div class="card-body">
+        <form action="/admin/appointments" method="get" class="row g-3">
+            {% if user_id %}
+            <input type="hidden" name="user_id" value="{{ user_id }}">
+            {% endif %}
+            <div class="col-md-4">
+                <label for="status_filter" class="form-label">Статус</label>
+                <select name="status_filter" id="status_filter" class="form-select">
+                    <option value="">Все статусы</option>
+                    {% for status_option in statuses %}
+                    <option value="{{ status_option }}" {% if current_status == status_option %}selected{% endif %}>
+                        {% if status_option == 'PENDING' %}Ожидает подтверждения
+                        {% elif status_option == 'CONFIRMED' %}Подтверждено
+                        {% elif status_option == 'COMPLETED' %}Завершено
+                        {% elif status_option == 'CANCELLED' %}Отменено
+                        {% else %}{{ status_option }}
+                        {% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="date_from" class="form-label">Дата с</label>
+                <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from or '' }}">
+            </div>
+            <div class="col-md-3">
+                <label for="date_to" class="form-label">Дата по</label>
+                <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to or '' }}">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Применить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if appointments %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover" id="appointmentsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Клиент</th>
+                        <th>Услуга</th>
+                        <th>Дата и время</th>
+                        <th>Статус</th>
+                        <th>Примечания</th>
+                        <th>Создано</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appointment in appointments %}
+                    <tr>
+                        <td>{{ appointment.id }}</td>
+                        <td>
+                            {% if appointment.user %}
+                                <strong>{{ appointment.user.name }}</strong><br>
+                                {{ appointment.user.email }}<br>
+                                {{ appointment.user.phone }}
+                            {% else %}
+                                <span class="text-muted">Пользователь не найден</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if appointment.service %}
+                                <strong>{{ appointment.service.name }}</strong><br>
+                                {{ appointment.service.price }} ₽<br>
+                                {{ appointment.service.duration }} мин.
+                            {% else %}
+                                <span class="text-muted">Услуга не найдена</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ appointment.appointment_time.strftime('%d.%m.%Y %H:%M') }}</td>
+                        <td>
+                            {% if appointment.status == 'PENDING' %}
+                            <span class="badge bg-warning">Ожидает подтверждения</span>
+                            {% elif appointment.status == 'CONFIRMED' %}
+                            <span class="badge bg-success">Подтверждено</span>
+                            {% elif appointment.status == 'COMPLETED' %}
+                            <span class="badge bg-primary">Завершено</span>
+                            {% elif appointment.status == 'CANCELLED' %}
+                            <span class="badge bg-danger">Отменено</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ appointment.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if appointment.notes %}
+                            {{ appointment.notes }}
+                            {% else %}
+                            <span class="text-muted">Нет примечаний</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ appointment.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                        <td>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                    Изменить статус
+                                </button>
+                                <ul class="dropdown-menu">
+                                    {% if appointment.status != 'PENDING' %}
+                                    <li>
+                                        <form action="/admin/appointments/{{ appointment.id }}/update-status" method="post">
+                                            <input type="hidden" name="status" value="PENDING">
+                                            <button type="submit" class="dropdown-item">Ожидает подтверждения</button>
+                                        </form>
+                                    </li>
+                                    {% endif %}
+                                    
+                                    {% if appointment.status != 'CONFIRMED' %}
+                                    <li>
+                                        <form action="/admin/appointments/{{ appointment.id }}/update-status" method="post">
+                                            <input type="hidden" name="status" value="CONFIRMED">
+                                            <button type="submit" class="dropdown-item">Подтвердить</button>
+                                        </form>
+                                    </li>
+                                    {% endif %}
+                                    
+                                    {% if appointment.status != 'COMPLETED' %}
+                                    <li>
+                                        <form action="/admin/appointments/{{ appointment.id }}/update-status" method="post">
+                                            <input type="hidden" name="status" value="COMPLETED">
+                                            <button type="submit" class="dropdown-item">Завершить</button>
+                                        </form>
+                                    </li>
+                                    {% endif %}
+                                    
+                                    {% if appointment.status != 'CANCELLED' %}
+                                    <li>
+                                        <form action="/admin/appointments/{{ appointment.id }}/update-status" method="post">
+                                            <input type="hidden" name="status" value="CANCELLED">
+                                            <button type="submit" class="dropdown-item">Отменить</button>
+                                        </form>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-center py-4">Записи не найдены</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Инициализируем DataTable для таблицы записей
+        if (document.getElementById('appointmentsTable')) {
+            new DataTable('#appointmentsTable', {
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.1/i18n/ru.json'
+                },
+                order: [[3, 'desc']], // Сортировка по дате (4-й столбец) по убыванию
+                responsive: true
+            });
+        }
+    });
+</script>
+{% endblock %} 

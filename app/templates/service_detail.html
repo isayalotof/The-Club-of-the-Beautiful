@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}{{ service.name }} - Салон красоты{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Главная</a></li>
+                    <li class="breadcrumb-item"><a href="/services">Услуги</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ service.name }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Изображение услуги -->
+        <div class="col-md-5 mb-4">
+            <div class="card">
+                {% if service.image_url %}
+                <img src="{{ service.image_url }}" class="card-img-top" alt="{{ service.name }}">
+                {% else %}
+                <img src="{{ url_for('static', path='/images/default-service.jpg') }}" class="card-img-top" alt="{{ service.name }}">
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Информация об услуге -->
+        <div class="col-md-7 mb-4">
+            <h1 class="mb-3">{{ service.name }}</h1>
+            <div class="mb-4">
+                <p class="h2 text-primary">{{ service.price }} ₽</p>
+                <p><span class="badge bg-secondary">{{ service.category }}</span></p>
+                <p><i class="far fa-clock me-2"></i>Длительность: {{ service.duration }} минут</p>
+            </div>
+            
+            <div class="mb-4">
+                <h4>Описание</h4>
+                <p>{{ service.description }}</p>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <a href="/book/{{ service.id }}" class="btn btn-primary btn-lg">Записаться на услугу</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Информация о процедуре -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">Информация о процедуре</h3>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center">
+                                <i class="fas fa-info-circle text-primary fa-3x mb-3"></i>
+                                <h5>Что это такое?</h5>
+                                <p>Подробное описание процедуры и её преимуществ для клиента.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center">
+                                <i class="fas fa-user-check text-primary fa-3x mb-3"></i>
+                                <h5>Кому подходит?</h5>
+                                <p>Описание целевой аудитории и показаний к данной процедуре.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center">
+                                <i class="fas fa-clipboard-list text-primary fa-3x mb-3"></i>
+                                <h5>Как подготовиться?</h5>
+                                <p>Рекомендации по подготовке к процедуре для достижения наилучшего результата.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Похожие услуги -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="mb-4">Похожие услуги</h3>
+        </div>
+        
+        {% for similar_service in similar_services %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                {% if similar_service.image_url %}
+                <img src="{{ similar_service.image_url }}" class="card-img-top" alt="{{ similar_service.name }}">
+                {% else %}
+                <img src="{{ url_for('static', path='/images/default-service.jpg') }}" class="card-img-top" alt="{{ similar_service.name }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ similar_service.name }}</h5>
+                    <p class="card-text">{{ similar_service.description | truncate(100) }}</p>
+                    <p class="card-text text-primary fw-bold">{{ similar_service.price }} ₽</p>
+                </div>
+                <div class="card-footer bg-white border-top-0">
+                    <a href="/services/{{ similar_service.id }}" class="btn btn-outline-primary">Подробнее</a>
+                    <a href="/book/{{ similar_service.id }}" class="btn btn-primary float-end">Записаться</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 
